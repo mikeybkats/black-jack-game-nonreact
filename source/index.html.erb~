@@ -1,0 +1,30 @@
+---
+title: Blackjack 
+---
+<title id="">Hello</title>
+<h1>
+  Blackjack  
+</h1>
+
+<div class="game-board" id="gameBoard">
+  <div class="computer" id="computer">
+    <h3 id="computerScore">Count: </h3>
+    <div>
+      <img src="images/cover.svg" class="card">
+      <img src="" class="card" id="computerDealtCard">
+    </div>
+  </div>
+
+  <div class="player" id="player">
+    <h3 id="playerScore">Count: </h3>
+    <div>
+      <img class="card" src="images/cover.svg">
+      <img class="card" src="" id="playerDealtCard">
+     </div>
+  </div>
+  <div>
+    <button id="hit"></button>
+    <button id="stay"></button>
+  </div>
+</div>
+

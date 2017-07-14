@@ -1,0 +1,5 @@
+// This is where it all goes :)
+//= require handlebars-source
+//= require jquery
+//= require ./deck.js
+
