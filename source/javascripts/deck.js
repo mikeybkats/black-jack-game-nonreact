@@ -15,13 +15,10 @@ var cards = [
 
 var cardsWithValue = [];
 
-function getScore(){
-
-}
-
 function Card(name){
   this.name = name;
   this.value = getCardValue(name);
+  this.location = '/images/playcards/' + name;
   //this.suit = getCardSuit(name);
 }
 
@@ -48,103 +45,135 @@ function makeCards(){
   }
 }
 
-function gameBoard(){
-  var playerHand = [];
-  var computerHand = [];
-  
-}
-
 var gameHistoryStruct = [
-    { 
-      name: "human",
+    {
+      name: "computer",
       score: [],
       playHistory: []
     },
-    {
-      name: "computer",
+    { 
+      name: "human",
       score: [],
       playHistory: []
     }
   ];
 
 function reduceScore(){
-  gameHistoryStruct.map(function(players){
-    players.score.reduce(function(sum, value){
+  // reduces the scores in the score array to a single value
+  return gameHistoryStruct.map(function(players){
+    var total = players.score.reduce(function(sum, value){
       return sum + value;
     }, 0);
+    console.log(total);
+    players.score = [];
+    players.score.push(total);
   });
+
 }
 
 function getScore(player){
   // returns the current reduced score from json
-  reduceScore();
   return gameHistoryStruct.filter(function(name){
     return name.name === player; 
   }).map(function(players){
-    console.log(players.score);
+    //console.log(players.score);
     return players.score;
   });
 }
 
-function setScore(){
-  // sets the current score in the json
+function setScoreToBoard(){
+  reduceScore();
   var scoreContext = {
     playerScore: getScore("human"),
     computerScore: getScore("computer") 
   };
 
-  console.log(scoreContext.playerScore);
-
   var playerScore = document.getElementById('playerScore');
-  playerScore.innerText = "Count: " + scoreContext.playerScore;
+  playerScore.innerText = "Player count: " + scoreContext.playerScore;
   var computerScore = document.getElementById('computerScore');
-  computerScore.innerText = "Count: " + scoreContext.computerScore;
- 
+  computerScore.innerText = "Computer count: " + scoreContext.computerScore;
 }
 
-function setPlayHistory(){
-  // push the play history to json 
-  gameHistoryStruct.map(function(players){
-    var value = 0;
-    console.log(players);
-    players.playHistory.map(function(card){
-      console.log("card value:" +card.value);
-      // push card to history
-      players.playHistory.push(card.value);
-      value = value + card.value;
-      // push score to totale score
-      players.score.push(value);
-    });
-  });
-  //console.log(gameHistoryStruct[1].score);
-  //console.log(gameHistoryStruct[0].score);
-}
-
-function setBoard(event){
-  // pulls the game history from the json and pushes it to the board
+function getCardFromDeck(){
+  // returns a random card from the deck
+  // reduces the total number of cards in the deck
+  var card;
   var randomCardNumber = function(){
     var value = Math.floor(Math.random() * cardsWithValue.length + 1);
     return value;
   }
+  card = cardsWithValue[randomCardNumber()];
+  cardsWithValue.pop(randomCardNumber()); 
+  return card;
+}
 
-  var gameBoardPlayer = document.getElementById('playerDealtCard');
-  var gameBoardComputer = document.getElementById('computerDealtCard');
-  
-  var playerCard = randomCardNumber();
-  gameHistoryStruct[0].playHistory.push(cardsWithValue[playerCard]);
-  cardsWithValue.pop(playerCard);
+function setCardToHistory(player, card){
+  // sets a card to the given player's history
+  gameHistoryStruct.filter(function(name){
+    return name.name === player; 
+  }).map(function(players){
+    players.score.push(card.value);
+    return players.playHistory.push(card);
+  });
+} 
 
-  var computerCard = randomCardNumber();
-  gameHistoryStruct[1].playHistory.push(cardsWithValue[computerCard]);
-  cardsWithValue.pop(computerCard);
+function drawBoard(){
+  // pulls cards from gameHistoryStruct arrays and puts them on the board  
+  // calls the score functions to update counts.
+  var gameBoardPlayer = $('#playerDealtCard');
+  var gameBoardComputer = $('#computerDealtCard');
+  $( "#playerDealtCard" ).empty();
+  $( "#computerDealtCard" ).empty();
+  gameBoardPlayer.append(
+      "<img class=\"card\" src=\"images/cover.svg\">"
+  );
+  gameBoardComputer.append(
+      "<img class=\"card\" src=\"images/cover.svg\">"
+  );
   
-  gameBoardComputer.src = './images/' + cardsWithValue[computerCard].name;
-  gameBoardPlayer.src = './images/' + cardsWithValue[playerCard].name;  
+  gameHistoryStruct.map(function(players){
+      if (players.name === "human"){
+        players.playHistory.map(function(card){
+          gameBoardPlayer.append(
+              "<img class=\"card playcard\" src=\"." + card.location + "\">"
+              );
+        });
+      }
+      if (players.name === "computer"){
+        players.playHistory.map(function(card){
+          gameBoardComputer.append(
+              "<img class=\"card playcard\" src=\"." + card.location + "\">"
+              );
+        });
+      }
+  });
+  
+}
+
+function startGame(event){
+  var playerCard = getCardFromDeck();
+  setCardToHistory("human", playerCard);
+
+  var computerCard = getCardFromDeck(); 
+  setCardToHistory("computer", computerCard);
+
+  drawBoard();
+}
+
+function hit(event){
+  $("#hit").on('click', function(){
+    setCardToHistory("human", getCardFromDeck());
+    reduceScore();
+    setScoreToBoard();
+    drawBoard();
+  });
 }
 
 $(document).ready(function(){
   makeCards();
-  setBoard();
-  setPlayHistory();
-  setScore();
+  startGame();
+
+  //setScoreToHistory();
+  setScoreToBoard();
+  hit();
 });
